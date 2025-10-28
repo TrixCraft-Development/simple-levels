@@ -1,0 +1,7 @@
+levels:
+  1:
+    display: "&aLevel 1 - Beginner"
+  2:
+    display: "&6Level 2 - Novice"
+  3:
+    display: "&cLevel 3 - Intermediate"

@@ -1,0 +1,21 @@
+name: LevelSystem
+main: de.nitrox.levelsystem.LevelSystem
+version: '${project.version}'
+api-version: '1.20'
+description: A simple level system for Minecraft
+author: Nitrox_XD
+depend: [PlaceholderAPI]
+
+commands:
+  addxp:
+    description: Adds XP to a player
+    usage: /addxp <player> <amount>
+    permission: levelsystem.addxp
+  removexp:
+    description: Removes XP from a player
+    usage: /removexp <player> <amount>
+    permission: levelsystem.removexp
+  reloadlevelsystem:
+    description: Reload the LevelSystem plugin.
+    usage: /reloadlevelsystem
+    permission: levelsystem.reload
