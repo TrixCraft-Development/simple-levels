@@ -1,146 +1,69 @@
 package de.nitrox.levelsystem;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.Objects;
 
 public class LevelSystem extends JavaPlugin {
 
-    private File levelFile;
-    private FileConfiguration levelConfig;
-    private File levelDesignFile;
-    private FileConfiguration levelDesignConfig;
+    private LevelSystemManager manager;
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
-        createLevelConfig();
-        createLevelDesignConfig();
-        saveDefaultConfig();
-        Bukkit.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        // ensure data folder
+        if (!getDataFolder().exists()) getDataFolder().mkdirs();
 
-        // Register Placeholder
+        // manager & load systems
+        manager = new LevelSystemManager(this);
+        manager.loadSystems();
+
+        // register placeholder if available
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new LevelPlaceholder(this).register();
+            getLogger().info("PlaceholderAPI found — LevelPlaceholder registered.");
+        } else {
+            getLogger().info("PlaceholderAPI not found — placeholders unavailable.");
         }
 
-        // Register Commands
-        PluginCommand addXpCommand = getCommand("addxp");
-        if (addXpCommand != null) {
-            addXpCommand.setExecutor(new AddXPCommand(this));
-        }
+        // commands
+        PluginCommand add = getCommand("addxp");
+        if (add != null) add.setExecutor(new AddXPCommand(this));
 
-        PluginCommand removeXpCommand = getCommand("removexp");
-        if (removeXpCommand != null) {
-            removeXpCommand.setExecutor(new RemoveXPCommand(this));
-        }
+        PluginCommand rem = getCommand("removexp");
+        if (rem != null) rem.setExecutor(new RemoveXPCommand(this));
 
-        PluginCommand reloadCommand = getCommand("reloadlevelsystem");
-        if (reloadCommand != null) {
-            reloadCommand.setExecutor(new ReloadCommand(this));
-        }
+        PluginCommand reload = getCommand("reloadlevelsystem");
+        if (reload != null) reload.setExecutor(new ReloadCommand(this));
+
+        PluginCommand levelstats = getCommand("levelstats");
+        if (levelstats != null) levelstats.setExecutor(new LevelStatsCommand(this));
+
+        CommandTabCompleter completer = new CommandTabCompleter(this);
+
+        Objects.requireNonNull(getCommand("addxp")).setTabCompleter(completer);
+        Objects.requireNonNull(getCommand("removexp")).setTabCompleter(completer);
+        Objects.requireNonNull(getCommand("levelstats")).setTabCompleter(completer);
+
+        // listener
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
+
+        getLogger().info("LevelSystem enabled — loaded " + manager.getAll().size() + " system(s).");
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        // save all instances
+        manager.getAll().values().forEach(LevelSystemInstance::save);
+        getLogger().info("LevelSystem disabled.");
     }
 
-    private void createLevelConfig() {
-        levelFile = new File(getDataFolder(), "levels.yml");
-
-        if (!levelFile.exists()) {
-            levelFile.getParentFile().mkdirs();
-            saveResource("levels.yml", false);
-        }
-
-        levelConfig = new YamlConfiguration();
-        try {
-            levelConfig.load(levelFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createLevelDesignConfig() {
-        levelDesignFile = new File(getDataFolder(), "leveldesign.yml");
-
-        if (!levelDesignFile.exists()) {
-            levelDesignFile.getParentFile().mkdirs();
-            saveResource("leveldesign.yml", false);
-        }
-
-        levelDesignConfig = new YamlConfiguration();
-        try {
-            levelDesignConfig.load(levelDesignFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public FileConfiguration getLevelConfig() {
-        return levelConfig;
-    }
-
-    public void saveLevelConfig() {
-        try {
-            levelConfig.save(levelFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public FileConfiguration getLevelDesignConfig() {
-        return levelDesignConfig;
-    }
-
-    public void saveLevelDesignConfig() {
-        try {
-            levelDesignConfig.save(levelDesignFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public int getRequiredXPForLevel(int level) {
-        return (int) Math.pow(level, 2) * 100;
-    }
-
-    public boolean isWorldDisabled(String worldName) {
-        List<String> disabledWorlds = getConfig().getStringList("disabled-worlds");
-        return disabledWorlds.contains(worldName);
-    }
-
-    public void reloadConfigs() {
-        // reload default config (config.yml)
-        reloadConfig();
-
-        // reload levels.yml
-        try {
-            levelFile = new File(getDataFolder(), "levels.yml");
-            if (!levelFile.exists()) saveResource("levels.yml", false);
-            levelConfig = new YamlConfiguration();
-            levelConfig.load(levelFile);
-        } catch (Exception e) {
-            getLogger().severe("Failed to reload levels.yml");
-            e.printStackTrace();
-        }
-
-        // reload leveldesign.yml
-        try {
-            levelDesignFile = new File(getDataFolder(), "leveldesign.yml");
-            if (!levelDesignFile.exists()) saveResource("leveldesign.yml", false);
-            levelDesignConfig = new YamlConfiguration();
-            levelDesignConfig.load(levelDesignFile);
-        } catch (Exception e) {
-            getLogger().severe("Failed to reload leveldesign.yml");
-            e.printStackTrace();
-        }
+    public LevelSystemManager getManager() {
+        return manager;
     }
 }

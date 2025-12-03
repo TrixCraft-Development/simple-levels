@@ -1,21 +1,34 @@
 name: LevelSystem
 main: de.nitrox.levelsystem.LevelSystem
-version: '${project.version}'
-api-version: '1.20'
-description: A simple level system for Minecraft
+version: 1.1
+api-version: 1.20
+description: Multi-LevelSystem plugin
 author: Nitrox_XD
-depend: [PlaceholderAPI]
 
 commands:
   addxp:
-    description: Adds XP to a player
-    usage: /addxp <player> <amount>
+    description: Add XP to a player in a specific system
+    usage: /addxp <system> <amount> <player>
     permission: levelsystem.addxp
   removexp:
-    description: Removes XP from a player
-    usage: /removexp <player> <amount>
+    description: Remove XP from a player in a specific system
+    usage: /removexp <system> <amount> <player>
     permission: levelsystem.removexp
   reloadlevelsystem:
-    description: Reload the LevelSystem plugin.
+    description: Reload all LevelSystem configs
     usage: /reloadlevelsystem
     permission: levelsystem.reload
+  levelstats:
+    description: Show your stats for a specific levelsystem
+    usage: "/levelstats <identifier>"
+
+permissions:
+  levelsystem.addxp:
+    description: Allows adding XP
+    default: op
+  levelsystem.removexp:
+    description: Allows removing XP
+    default: op
+  levelsystem.reload:
+    description: Allows reloading systems
+    default: op

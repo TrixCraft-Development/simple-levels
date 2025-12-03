@@ -1,7 +1,6 @@
 package de.nitrox.levelsystem;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class LevelPlaceholder extends PlaceholderExpansion {
@@ -12,49 +11,54 @@ public class LevelPlaceholder extends PlaceholderExpansion {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean persist() { return true; }
+    @Override public boolean persist() { return true; }
+    @Override public boolean canRegister() { return true; }
 
     @Override
-    public boolean canRegister() { return true; }
+    public String getAuthor() {
+        return String.join(", ", plugin.getDescription().getAuthors());
+    }
 
     @Override
-    public String getAuthor() { return plugin.getDescription().getAuthors().toString(); }
+    public String getIdentifier() {
+        return "levelsystem";
+    }
 
     @Override
-    public String getIdentifier() { return "levelsystem"; }
+    public String getVersion() {
+        return plugin.getDescription().getVersion();
+    }
 
     @Override
-    public String getVersion() { return plugin.getDescription().getVersion(); }
+    public String onPlaceholderRequest(Player player, String params) {
 
-    @Override
-    public String onPlaceholderRequest(Player player, String identifier) {
-        if (player == null) return "";
+        if (player == null || params == null || params.isEmpty()) {
+            return "";
+        }
 
-        if (identifier.equalsIgnoreCase("level")) {
-            int xp = plugin.getLevelConfig().getInt("players." + player.getUniqueId() + ".xp", 0);
-            int level = calculateLevel(xp);
+        // format: <systemid>_<type>
+        // example: default_level_raw
+        int lastUnd = params.lastIndexOf('_');
+        if (lastUnd <= 0) return null;
 
-            // get display for level from leveldesign.yml under "levels.<level>.display"
-            String path = "levels." + level + ".display";
-            String raw = plugin.getLevelDesignConfig().getString(path);
+        String systemId = params.substring(0, lastUnd);
+        String type = params.substring(lastUnd + 1).toLowerCase();
 
-            if (raw != null && !raw.isEmpty()) {
-                // Replace %level% placeholder and translate color codes (&)
-                String replaced = raw.replace("%level%", String.valueOf(level));
-                return ChatColor.translateAlternateColorCodes('&', replaced);
-            }
+        LevelSystemInstance inst = plugin.getManager().get(systemId);
+        if (inst == null) return null;
 
-            // fallback: just return colored "Level X"
-            return ChatColor.translateAlternateColorCodes('&', "&eLevel " + level);
+        int level = inst.getPlayerLevel(player.getUniqueId());
+
+        // FORMATTED LEVEL
+        if (type.equals("level")) {
+            return inst.getDisplayForLevel(level);
+        }
+
+        // RAW LEVEL (supports both versions)
+        if (type.equals("level_raw") || type.equals("levelraw")) {
+            return String.valueOf(level);
         }
 
         return null;
-    }
-
-    private int calculateLevel(int xp) {
-        int level = 1;
-        while (xp >= plugin.getRequiredXPForLevel(level)) level++;
-        return level - 1;
     }
 }

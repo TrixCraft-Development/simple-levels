@@ -1,5 +1,6 @@
 package de.nitrox.levelsystem;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,22 +15,20 @@ public class ReloadCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // No player-only restriction: allow console too
         if (!sender.hasPermission("levelsystem.reload")) {
-            sender.sendMessage("§cYou do not have permission to execute this command.");
-            return true; // handled
+            sender.sendMessage(ChatColor.RED + "You do not have permission to execute this command.");
+            return true;
         }
 
-        // Call reload on plugin (safe)
         try {
-            plugin.reloadConfigs();
-            sender.sendMessage("§aLevelSystem: Configs reloaded.");
-        } catch (Exception ex) {
-            sender.sendMessage("§cLevelSystem: An error occurred while reloading. See console.");
-            plugin.getLogger().severe("Error reloading LevelSystem configs:");
-            ex.printStackTrace();
+            plugin.getManager().loadSystems();
+            sender.sendMessage(ChatColor.GREEN + "LevelSystem: all systems reloaded.");
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error reloading systems:");
+            e.printStackTrace();
+            sender.sendMessage(ChatColor.RED + "An error occurred. Check console.");
         }
 
-        return true; // IMPORTANT: return true so Bukkit does NOT send the usage message
+        return true;
     }
 }

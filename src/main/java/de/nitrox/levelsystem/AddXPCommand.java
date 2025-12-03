@@ -1,9 +1,11 @@
 package de.nitrox.levelsystem;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public class AddXPCommand implements CommandExecutor {
 
@@ -13,64 +15,57 @@ public class AddXPCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
+    /**
+     * Usage: /addxp <identifier> <amount> <player>
+     */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be executed by a player.");
+        if (!sender.hasPermission("levelsystem.addxp")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }
 
-        Player player = (Player) sender;
-
-        if (plugin.isWorldDisabled(player.getWorld().getName())) {
-            player.sendMessage("This command cannot be used in this world.");
+        if (args.length != 3) {
+            sender.sendMessage(ChatColor.RED + "Usage: /addxp <identifier> <amount> <player>");
             return true;
         }
 
-        if (!player.hasPermission("levelsystem.addxp")) {
-            player.sendMessage("You do not have permission to execute this command.");
-            return true;
-        }
-
-        if (args.length < 1 || args.length > 2) {
-            player.sendMessage("Usage: /addxp <amount> [player]");
+        String id = args[0];
+        LevelSystemInstance inst = plugin.getManager().get(id);
+        if (inst == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown LevelSystem: " + id);
             return true;
         }
 
         int amount;
         try {
-            amount = Integer.parseInt(args[0]);
+            amount = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            player.sendMessage("Please enter a valid number.");
+            sender.sendMessage(ChatColor.RED + "Invalid amount: " + args[1]);
             return true;
         }
 
-        Player targetPlayer = player;
-        if (args.length == 2) {
-            targetPlayer = plugin.getServer().getPlayer(args[1]);
-            if (targetPlayer == null) {
-                player.sendMessage("The specified player is not online.");
-                return true;
-            }
+        Player target = Bukkit.getPlayerExact(args[2]);
+        if (target == null) {
+            sender.sendMessage(ChatColor.RED + "Player not online: " + args[2]);
+            return true;
         }
 
-        int currentXP = plugin.getLevelConfig().getInt("players." + targetPlayer.getUniqueId() + ".xp", 0);
-        int newXP = currentXP + amount;
-        plugin.getLevelConfig().set("players." + targetPlayer.getUniqueId() + ".xp", newXP);
-        plugin.saveLevelConfig();
+        // check disabled worlds for that instance
+        if (inst.isWorldDisabled(target.getWorld().getName())) {
+            sender.sendMessage(ChatColor.RED + "This LevelSystem is disabled in that world.");
+            return true;
+        }
 
-        int newLevel = calculateLevel(newXP);
-        targetPlayer.setLevel(newLevel);
+        UUID uuid = target.getUniqueId();
+        int currentXP = inst.getPlayerXP(uuid);
+        int newXP = Math.max(0, currentXP + amount);
+        inst.setPlayerXP(uuid, newXP);
 
-        targetPlayer.sendMessage("You have been given " + amount + " XP. Your new level is " + newLevel + ".");
+        int newLevel = inst.getPlayerLevel(uuid);
+
+        sender.sendMessage(ChatColor.GREEN + "Added " + amount + " XP to " + target.getName() + " in system " + id + ". New level: " + newLevel);
+        target.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aYou received &e" + amount + " &aXP in system &b" + id + "&a. New level: &e" + newLevel));
         return true;
-    }
-
-    private int calculateLevel(int xp) {
-        int level = 1;
-        while (xp >= plugin.getRequiredXPForLevel(level)) {
-            level++;
-        }
-        return level - 1;
     }
 }

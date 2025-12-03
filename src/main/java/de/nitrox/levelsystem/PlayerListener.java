@@ -3,8 +3,6 @@ package de.nitrox.levelsystem;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.entity.Player;
 
 public class PlayerListener implements Listener {
 
@@ -14,27 +12,15 @@ public class PlayerListener implements Listener {
         this.plugin = plugin;
     }
 
+    // Example: set player's vanilla level to highest across systems (optional UX)
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        int xp = plugin.getLevelConfig().getInt("players." + player.getUniqueId() + ".xp", 0);
-        player.setLevel(calculateLevel(xp));
-    }
-
-    @EventHandler
-    public void onPlayerExpChange(PlayerExpChangeEvent event) {
-        Player player = event.getPlayer();
-        int xp = plugin.getLevelConfig().getInt("players." + player.getUniqueId() + ".xp", 0) + event.getAmount();
-        plugin.getLevelConfig().set("players." + player.getUniqueId() + ".xp", xp);
-        plugin.saveLevelConfig();
-        player.setLevel(calculateLevel(xp));
-    }
-
-    private int calculateLevel(int xp) {
-        int level = 1;
-        while (xp >= plugin.getRequiredXPForLevel(level)) {
-            level++;
+    public void onJoin(PlayerJoinEvent e) {
+        // optional: compute highest level across systems and set player's exp level
+        int highest = 0;
+        for (LevelSystemInstance inst : plugin.getManager().getAll().values()) {
+            int lvl = inst.getPlayerLevel(e.getPlayer().getUniqueId());
+            if (lvl > highest) highest = lvl;
         }
-        return level - 1;
+        e.getPlayer().setLevel(highest);
     }
 }
