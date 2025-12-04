@@ -5,10 +5,10 @@
 
     <groupId>de.nitrox.levelsystem</groupId>
     <artifactId>LevelSystem</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <name>LevelSystem</name>
-    <description>A simple level system for Minecraft</description>
+    <description>A multi level system for Minecraft</description>
 
     <properties>
         <java.version>16</java.version>

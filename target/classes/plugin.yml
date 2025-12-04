@@ -1,6 +1,6 @@
 name: LevelSystem
 main: de.nitrox.levelsystem.LevelSystem
-version: 1.1
+version: 1.2
 api-version: 1.20
 description: Multi-LevelSystem plugin
 author: Nitrox_XD
@@ -20,7 +20,7 @@ commands:
     permission: levelsystem.reload
   levelstats:
     description: Show your stats for a specific levelsystem
-    usage: "/levelstats <identifier>"
+    usage: "/levelstats <identifier> <player>"
 
 permissions:
   levelsystem.addxp:

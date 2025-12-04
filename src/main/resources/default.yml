@@ -1,15 +1,19 @@
 disabled-worlds:
-  - world_nether
-  - world_the_end
+  - example_world
+  - custom_world_name
 
 # players.<uuid>.xp will be created automatically when you give/remove xp with commands
 players: {}
 
-# optional per-level entries:
+#used for animated Displays
+tick-speed: 10
+
 levels:
   1:
-    display: "&aLevel 1 - &7Beginner"
-    # xp: 50   # optional: set a specific XP required for level 1
+    display:
+      - "&aLevel 1 - &7Beginner"
+      - "&cLevel 1 - &7Beginner"
+      - "&4Level 1 - &7Beginner"
   2:
     display: "&bLevel 2 - &7Novice"
   3:

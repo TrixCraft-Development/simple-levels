@@ -31,34 +31,32 @@ public class LevelPlaceholder extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, String params) {
+        if (player == null || params == null || params.isEmpty()) return "";
 
-        if (player == null || params == null || params.isEmpty()) {
-            return "";
+        // Detect suffixes first
+        if (params.endsWith("_level_raw")) {
+            String systemId = params.substring(0, params.length() - "_level_raw".length());
+            return handleRaw(systemId, player);
         }
-
-        // format: <systemid>_<type>
-        // example: default_level_raw
-        int lastUnd = params.lastIndexOf('_');
-        if (lastUnd <= 0) return null;
-
-        String systemId = params.substring(0, lastUnd);
-        String type = params.substring(lastUnd + 1).toLowerCase();
-
-        LevelSystemInstance inst = plugin.getManager().get(systemId);
-        if (inst == null) return null;
-
-        int level = inst.getPlayerLevel(player.getUniqueId());
-
-        // FORMATTED LEVEL
-        if (type.equals("level")) {
-            return inst.getDisplayForLevel(level);
-        }
-
-        // RAW LEVEL (supports both versions)
-        if (type.equals("level_raw") || type.equals("levelraw")) {
-            return String.valueOf(level);
+        if (params.endsWith("_level")) {
+            String systemId = params.substring(0, params.length() - "_level".length());
+            return handleFormatted(systemId, player);
         }
 
         return null;
+    }
+
+    private String handleFormatted(String systemId, Player player) {
+        LevelSystemInstance inst = plugin.getManager().get(systemId);
+        if (inst == null) return null;
+        int lvl = inst.getPlayerLevel(player.getUniqueId());
+        return inst.getAnimatedDisplay(lvl);
+    }
+
+    private String handleRaw(String systemId, Player player) {
+        LevelSystemInstance inst = plugin.getManager().get(systemId);
+        if (inst == null) return null;
+        int lvl = inst.getPlayerLevel(player.getUniqueId());
+        return String.valueOf(lvl);
     }
 }

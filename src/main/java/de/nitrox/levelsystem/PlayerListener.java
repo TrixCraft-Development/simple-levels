@@ -12,15 +12,8 @@ public class PlayerListener implements Listener {
         this.plugin = plugin;
     }
 
-    // Example: set player's vanilla level to highest across systems (optional UX)
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        // optional: compute highest level across systems and set player's exp level
-        int highest = 0;
-        for (LevelSystemInstance inst : plugin.getManager().getAll().values()) {
-            int lvl = inst.getPlayerLevel(e.getPlayer().getUniqueId());
-            if (lvl > highest) highest = lvl;
-        }
-        e.getPlayer().setLevel(highest);
+        // plugin.getManager().getAll().values().forEach(inst -> inst.getPlayerXP(e.getPlayer().getUniqueId()));
     }
 }
