@@ -68,7 +68,6 @@ public class LevelSystemManager {
     }
 
     public void startAnimationTask() {
-        // If already running, cancel first
         stopAnimationTask();
 
         taskId = Bukkit.getScheduler().runTaskTimer(plugin, () -> {

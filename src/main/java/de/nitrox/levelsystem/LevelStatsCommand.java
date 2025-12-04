@@ -61,7 +61,6 @@ public class LevelStatsCommand implements CommandExecutor {
             targetName = offline.getName();
         }
 
-        // gather stats
         int xp = inst.getPlayerXP(targetUUID);
         int level = inst.getPlayerLevel(targetUUID);
         int nextLevel = level + 1;

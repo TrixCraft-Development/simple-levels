@@ -2,7 +2,7 @@ disabled-worlds:
   - example_world
   - custom_world_name
 
-# players.<uuid>.xp will be created automatically when you give/remove xp with commands
+# players.<uuid>.xp will be created automatically when you add/remove xp with commands
 players: {}
 
 #used for animated Displays

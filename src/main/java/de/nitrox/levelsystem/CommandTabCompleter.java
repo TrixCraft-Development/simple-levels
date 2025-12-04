@@ -22,7 +22,6 @@ public class CommandTabCompleter implements TabCompleter {
 
         List<String> list = new ArrayList<>();
 
-        // all identifiers (config name without .yml)
         List<String> ids = new ArrayList<>(plugin.getManager().getIdentifiers());
 
         switch (cmd.getName().toLowerCase()) {
@@ -34,12 +33,10 @@ public class CommandTabCompleter implements TabCompleter {
             case "removexp":
 
                 if (args.length == 1) {
-                    // suggest identifiers
                     return ids;
                 }
 
                 if (args.length == 2) {
-                    // amount: numeric suggestion
                     list.add("100");
                     list.add("500");
                     list.add("1000");
@@ -47,7 +44,6 @@ public class CommandTabCompleter implements TabCompleter {
                 }
 
                 if (args.length == 3) {
-                    // players online
                     Bukkit.getOnlinePlayers().forEach(p -> list.add(p.getName()));
                     return list;
                 }

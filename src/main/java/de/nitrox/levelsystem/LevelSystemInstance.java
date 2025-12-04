@@ -16,16 +16,13 @@ public class LevelSystemInstance {
     private final File file;
     private FileConfiguration cfg;
 
-    // Cached override XP values
     private final Map<Integer, Integer> explicitXpPerLevel = new HashMap<>();
     private List<String> disabledWorlds = new ArrayList<>();
 
-    // Animation data: per-level list of frames and current frame index
     private final Map<Integer, List<String>> animatedFrames = new HashMap<>();
     private final Map<Integer, Integer> frameIndex = new HashMap<>();
 
-    // Tick handling (Option A: global per-instance tick speed)
-    private int tickSpeed = 20; // default 20 ticks
+    private int tickSpeed = 20;
     private int internalTickCounter = 0;
 
     public LevelSystemInstance(LevelSystem plugin, String id, File file) {
@@ -35,28 +32,21 @@ public class LevelSystemInstance {
         load();
     }
 
-    // ============================
-    // Load & Save
-    // ============================
     public void load() {
         try {
             if (!file.exists()) {
                 plugin.saveResource(file.getName(), false);
             }
         } catch (IllegalArgumentException ignored) {
-            // resource missing from JAR → allowed
         }
 
         cfg = YamlConfiguration.loadConfiguration(file);
 
-        // tick-speed (per-system)
         tickSpeed = Math.max(1, cfg.getInt("tick-speed", 20));
 
-        // disabled worlds
         disabledWorlds = cfg.getStringList("disabled-worlds");
         if (disabledWorlds == null) disabledWorlds = new ArrayList<>();
 
-        // explicit xp per level
         explicitXpPerLevel.clear();
         animatedFrames.clear();
         frameIndex.clear();
@@ -66,16 +56,13 @@ public class LevelSystemInstance {
                 try {
                     int lvl = Integer.parseInt(key);
 
-                    // XP override
                     if (cfg.contains("levels." + key + ".xp")) {
                         int xp = cfg.getInt("levels." + key + ".xp");
                         explicitXpPerLevel.put(lvl, xp);
                     }
 
-                    // display can be string or list
                     if (cfg.isList("levels." + key + ".display")) {
                         List<String> frames = cfg.getStringList("levels." + key + ".display");
-                        // trim nulls and keep at least one value
                         List<String> clean = new ArrayList<>();
                         for (String s : frames) if (s != null) clean.add(s);
                         if (clean.isEmpty()) clean.add("&eLevel " + lvl);
@@ -86,7 +73,6 @@ public class LevelSystemInstance {
                         animatedFrames.put(lvl, Collections.singletonList(single != null ? single : "&eLevel " + lvl));
                         frameIndex.put(lvl, 0);
                     } else {
-                        // fallback
                         animatedFrames.put(lvl, Collections.singletonList("&eLevel " + lvl));
                         frameIndex.put(lvl, 0);
                     }
@@ -117,9 +103,6 @@ public class LevelSystemInstance {
         return disabledWorlds.contains(worldName);
     }
 
-    // ============================
-    // XP Formula + Level Logic
-    // ============================
     public int getRequiredXPForLevel(int level) {
         if (explicitXpPerLevel.containsKey(level)) {
             return explicitXpPerLevel.get(level);
@@ -132,9 +115,6 @@ public class LevelSystemInstance {
         return Math.max(0, (int) Math.round(value));
     }
 
-    // ============================
-    // Player XP Handling
-    // ============================
     public int getPlayerXP(UUID uuid) {
         return cfg.getInt("players." + uuid + ".xp", 0);
     }
@@ -165,13 +145,6 @@ public class LevelSystemInstance {
         return Math.max(0, lvl - 1);
     }
 
-    // ============================
-    // Animation handling (Option A)
-    // ============================
-    /**
-     * Called every server tick by manager.
-     * Advances internal counter and rotates frames when needed.
-     */
     public void tick() {
         if (animatedFrames.isEmpty()) return;
 
@@ -202,7 +175,6 @@ public class LevelSystemInstance {
         }
     }
 
-    // Get current frame formatted for placeholders / scoreboard / tab
     public String getAnimatedDisplay(int level) {
         List<String> frames = animatedFrames.get(level);
         if (frames == null || frames.isEmpty()) return ChatColor.translateAlternateColorCodes('&', "&eLevel " + level);
@@ -216,12 +188,10 @@ public class LevelSystemInstance {
         return ChatColor.translateAlternateColorCodes('&', raw);
     }
 
-    // Backwards-compatible alias
     public String getDisplayForLevel(int level) {
         return getAnimatedDisplay(level);
     }
 
-    // accessors
     public int getTickSpeed() {
         return tickSpeed;
     }

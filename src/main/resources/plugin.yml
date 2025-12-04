@@ -8,15 +8,15 @@ author: Nitrox_XD
 commands:
   addxp:
     description: Add XP to a player in a specific system
-    usage: /addxp <system> <amount> <player>
+    usage: "/addxp <system> <amount> <player>"
     permission: levelsystem.addxp
   removexp:
     description: Remove XP from a player in a specific system
-    usage: /removexp <system> <amount> <player>
+    usage: "/removexp <system> <amount> <player>"
     permission: levelsystem.removexp
   reloadlevelsystem:
     description: Reload all LevelSystem configs
-    usage: /reloadlevelsystem
+    usage: "/reloadlevelsystem"
     permission: levelsystem.reload
   levelstats:
     description: Show your stats for a specific levelsystem

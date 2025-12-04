@@ -33,7 +33,6 @@ public class LevelPlaceholder extends PlaceholderExpansion {
     public String onPlaceholderRequest(Player player, String params) {
         if (player == null || params == null || params.isEmpty()) return "";
 
-        // Detect suffixes first
         if (params.endsWith("_level_raw")) {
             String systemId = params.substring(0, params.length() - "_level_raw".length());
             return handleRaw(systemId, player);
