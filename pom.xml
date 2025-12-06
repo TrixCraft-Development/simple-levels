@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.nitrox.levelsystem</groupId>
-    <artifactId>LevelSystem</artifactId>
+    <artifactId>SimpleLevels</artifactId>
     <version>1.2</version>
 
-    <name>LevelSystem</name>
+    <name>SimpleLevels</name>
     <description>A multi level system for Minecraft</description>
 
     <properties>
