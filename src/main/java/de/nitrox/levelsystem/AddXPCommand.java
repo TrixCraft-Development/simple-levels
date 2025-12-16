@@ -20,7 +20,7 @@ public class AddXPCommand implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("levelsystem.addxp")) {
+        if (!sender.hasPermission("simplelevels.addxp")) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }

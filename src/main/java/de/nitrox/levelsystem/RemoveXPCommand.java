@@ -20,7 +20,7 @@ public class RemoveXPCommand implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("levelsystem.removexp")) {
+        if (!sender.hasPermission("simplelevels.removexp")) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }

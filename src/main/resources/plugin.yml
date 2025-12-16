@@ -9,26 +9,26 @@ commands:
   addxp:
     description: Add XP to a player in a specific system
     usage: "/addxp <system> <amount> <player>"
-    permission: levelsystem.addxp
+    permission: simplelevels.addxp
   removexp:
     description: Remove XP from a player in a specific system
     usage: "/removexp <system> <amount> <player>"
-    permission: levelsystem.removexp
+    permission: simplelevels.removexp
   reloadlevelsystem:
     description: Reload all LevelSystem configs
     usage: "/reloadlevelsystem"
-    permission: levelsystem.reload
+    permission: simplelevels.reload
   levelstats:
     description: Show your stats for a specific levelsystem
     usage: "/levelstats <identifier> <player>"
 
 permissions:
-  levelsystem.addxp:
+  simplelevels.addxp:
     description: Allows adding XP
     default: op
-  levelsystem.removexp:
+  simplelevels.removexp:
     description: Allows removing XP
     default: op
-  levelsystem.reload:
+  simplelevels.reload:
     description: Allows reloading systems
     default: op

@@ -21,7 +21,7 @@ public class LevelPlaceholder extends PlaceholderExpansion {
 
     @Override
     public String getIdentifier() {
-        return "levelsystem";
+        return "simplelevels";
     }
 
     @Override
