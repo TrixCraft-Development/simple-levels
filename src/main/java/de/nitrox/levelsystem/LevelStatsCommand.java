@@ -1,17 +1,13 @@
 package de.nitrox.levelsystem;
 
-import de.nitrox.levelsystem.LevelSystem;
-import de.nitrox.levelsystem.LevelSystemInstance;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class LevelStatsCommand implements CommandExecutor {
+public class LevelStatsCommand {
 
     private final LevelSystem plugin;
 
@@ -19,13 +15,13 @@ public class LevelStatsCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        // /levelstats <identifier> <player>
+    /**
+     * /simplelevels levelstats <identifier> [player]
+     */
+    public boolean execute(CommandSender sender, String[] args) {
 
         if (args.length < 1 || args.length > 2) {
-            sender.sendMessage("§cUsage: /levelstats <identifier> [player]");
+            sender.sendMessage("§cUsage: /simplelevels levelstats <identifier> [player]");
             return true;
         }
 
@@ -42,21 +38,18 @@ public class LevelStatsCommand implements CommandExecutor {
 
         if (args.length == 1) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage("§cConsole must specify a player: /levelstats <id> <player>");
+                sender.sendMessage("§cConsole must specify a player.");
                 return true;
             }
-
             Player p = (Player) sender;
             targetUUID = p.getUniqueId();
             targetName = p.getName();
         } else {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(args[1]);
-
-            if (offline == null || (!offline.hasPlayedBefore() && !offline.isOnline())) {
+            if (!offline.hasPlayedBefore() && !offline.isOnline()) {
                 sender.sendMessage("§cPlayer '" + args[1] + "' not found.");
                 return true;
             }
-
             targetUUID = offline.getUniqueId();
             targetName = offline.getName();
         }
@@ -68,13 +61,11 @@ public class LevelStatsCommand implements CommandExecutor {
         int neededXP = inst.getRequiredXPForLevel(nextLevel);
         int difference = Math.max(0, neededXP - xp);
 
-        String display = inst.getDisplayForLevel(level);
-
         sender.sendMessage("§8---------------------------------");
         sender.sendMessage("§6Level Stats for: §e" + targetName);
         sender.sendMessage("§7System: §b" + systemId);
         sender.sendMessage("§7Level: §a" + level);
-        sender.sendMessage("§7Design: §f" + display);
+        sender.sendMessage("§7Design: §f" + inst.getDisplayForLevel(level));
         sender.sendMessage("§7XP: §d" + xp);
         sender.sendMessage("§7XP needed for next level (§e" + nextLevel + "§7): §d" + difference);
         sender.sendMessage("§8---------------------------------");

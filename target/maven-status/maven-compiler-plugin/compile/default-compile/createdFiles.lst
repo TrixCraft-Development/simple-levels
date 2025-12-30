@@ -4,6 +4,7 @@ de\nitrox\levelsystem\LevelPlaceholder.class
 de\nitrox\levelsystem\LevelStatsCommand.class
 de\nitrox\levelsystem\LevelSystemInstance.class
 de\nitrox\levelsystem\ReloadCommand.class
+de\nitrox\levelsystem\SimpleLevelsCommand.class
 de\nitrox\levelsystem\LevelSystem.class
 de\nitrox\levelsystem\PlayerListener.class
 de\nitrox\levelsystem\AddXPCommand.class

@@ -1,34 +1,25 @@
 name: SimpleLevels
 main: de.nitrox.levelsystem.LevelSystem
-version: 1.2
+version: 1.3
 api-version: 1.20
 description: Multi-LevelSystem plugin
 author: Nitrox_XD
 
 commands:
-  addxp:
-    description: Add XP to a player in a specific system
-    usage: "/addxp <system> <amount> <player>"
-    permission: levelsystem.addxp
-  removexp:
-    description: Remove XP from a player in a specific system
-    usage: "/removexp <system> <amount> <player>"
-    permission: levelsystem.removexp
-  reloadlevelsystem:
-    description: Reload all LevelSystem configs
-    usage: "/reloadlevelsystem"
-    permission: levelsystem.reload
-  levelstats:
-    description: Show your stats for a specific levelsystem
-    usage: "/levelstats <identifier> <player>"
+  simplelevels:
+    description: Main command for the SimpleLevels plugin
+    usage: /simplelevels <subcommand>
+    aliases: [sl]
 
 permissions:
-  levelsystem.addxp:
+  simplelevels.addxp:
     description: Allows adding XP
     default: op
-  levelsystem.removexp:
+
+  simplelevels.removexp:
     description: Allows removing XP
     default: op
-  levelsystem.reload:
-    description: Allows reloading systems
+
+  simplelevels.reload:
+    description: Allows reloading the plugin
     default: op

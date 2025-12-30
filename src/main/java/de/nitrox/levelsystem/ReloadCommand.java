@@ -1,11 +1,9 @@
 package de.nitrox.levelsystem;
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-public class ReloadCommand implements CommandExecutor {
+public class ReloadCommand {
 
     private final LevelSystem plugin;
 
@@ -13,22 +11,18 @@ public class ReloadCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    /**
+     * /simplelevels reload
+     */
+    public boolean execute(CommandSender sender, String[] args) {
+
         if (!sender.hasPermission("simplelevels.reload")) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to execute this command.");
+            sender.sendMessage(ChatColor.RED + "You do not have permission.");
             return true;
         }
 
-        try {
-            plugin.getManager().loadSystems();
-            sender.sendMessage(ChatColor.GREEN + "LevelSystem: all systems reloaded.");
-        } catch (Exception e) {
-            plugin.getLogger().severe("Error reloading systems:");
-            e.printStackTrace();
-            sender.sendMessage(ChatColor.RED + "An error occurred. Check console.");
-        }
-
+        plugin.getManager().loadSystems();
+        sender.sendMessage(ChatColor.GREEN + "SimpleLevels: all systems reloaded.");
         return true;
     }
 }

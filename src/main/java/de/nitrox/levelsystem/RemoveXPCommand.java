@@ -2,12 +2,12 @@ package de.nitrox.levelsystem;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class RemoveXPCommand implements CommandExecutor {
+public class RemoveXPCommand {
 
     private final LevelSystem plugin;
 
@@ -16,17 +16,18 @@ public class RemoveXPCommand implements CommandExecutor {
     }
 
     /**
-     * Usage: /removexp <identifier> <amount> <player>
+     * /simplelevels removexp <identifier> <amount> <player>
      */
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean execute(CommandSender sender, String[] args) {
+
         if (!sender.hasPermission("simplelevels.removexp")) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }
 
         if (args.length != 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /removexp <identifier> <amount> <player>");
+            sender.sendMessage(ChatColor.RED +
+                    "Usage: /simplelevels removexp <identifier> <amount> <player>");
             return true;
         }
 
@@ -57,14 +58,21 @@ public class RemoveXPCommand implements CommandExecutor {
         }
 
         UUID uuid = target.getUniqueId();
+
         int currentXP = inst.getPlayerXP(uuid);
-        int newXP = Math.max(0, currentXP - amount);
-        inst.setPlayerXP(uuid, newXP);
+        inst.setPlayerXP(uuid, Math.max(0, currentXP - amount));
 
         int newLevel = inst.getPlayerLevel(uuid);
 
-        sender.sendMessage(ChatColor.GREEN + "Removed " + amount + " XP from " + target.getName() + " in system " + id + ". New level: " + newLevel);
-        target.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cYou lost &e" + amount + " &cXP in system &b" + id + "&c. New level: &e" + newLevel));
+        sender.sendMessage(ChatColor.GREEN +
+                "Removed " + amount + " XP from " + target.getName() +
+                " in system " + id + ". New level: " + newLevel);
+
+        target.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                "&cYou lost &e" + amount +
+                        " &cXP in system &b" + id +
+                        "&c. New level: &e" + newLevel));
+
         return true;
     }
 }

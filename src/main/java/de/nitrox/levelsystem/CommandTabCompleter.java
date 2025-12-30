@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import de.nitrox.levelsystem.LevelPlaceholder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,55 +19,40 @@ public class CommandTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
 
-        List<String> list = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
-        List<String> ids = new ArrayList<>(plugin.getManager().getIdentifiers());
-
-        switch (cmd.getName().toLowerCase()) {
-
-            /* --------------------------
-               /addxp <identifier> <amount> <player>
-               -------------------------- */
-            case "addxp":
-            case "removexp":
-
-                if (args.length == 1) {
-                    return ids;
-                }
-
-                if (args.length == 2) {
-                    list.add("100");
-                    list.add("500");
-                    list.add("1000");
-                    return list;
-                }
-
-                if (args.length == 3) {
-                    Bukkit.getOnlinePlayers().forEach(p -> list.add(p.getName()));
-                    return list;
-                }
-
-                return list;
-
-
-            /* --------------------------
-               /levelstats <identifier> <player?>
-               -------------------------- */
-            case "levelstats":
-
-                if (args.length == 1) {
-                    return ids;
-                }
-
-                if (args.length == 2) {
-                    Bukkit.getOnlinePlayers().forEach(p -> list.add(p.getName()));
-                    return list;
-                }
-
-                return list;
+        if (args.length == 1) {
+            result.add("addxp");
+            result.add("removexp");
+            result.add("levelstats");
+            result.add("reload");
+            return result;
         }
 
-        return list;
+        String sub = args[0].toLowerCase();
+        List<String> ids = new ArrayList<>(plugin.getManager().getIdentifiers());
+
+        switch (sub) {
+
+            case "addxp":
+            case "removexp":
+                if (args.length == 2) return ids;
+                if (args.length == 3) return List.of("10", "100", "1000");
+                if (args.length == 4) {
+                    Bukkit.getOnlinePlayers().forEach(p -> result.add(p.getName()));
+                    return result;
+                }
+                break;
+
+            case "levelstats":
+                if (args.length == 2) return ids;
+                if (args.length == 3) {
+                    Bukkit.getOnlinePlayers().forEach(p -> result.add(p.getName()));
+                    return result;
+                }
+                break;
+        }
+
+        return result;
     }
 }
-

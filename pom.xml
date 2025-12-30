@@ -5,7 +5,7 @@
 
     <groupId>de.nitrox.levelsystem</groupId>
     <artifactId>SimpleLevels</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
 
     <name>SimpleLevels</name>
     <description>A multi level system for Minecraft</description>

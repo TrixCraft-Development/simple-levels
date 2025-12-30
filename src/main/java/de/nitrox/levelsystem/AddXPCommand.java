@@ -2,12 +2,12 @@ package de.nitrox.levelsystem;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class AddXPCommand implements CommandExecutor {
+public class AddXPCommand {
 
     private final LevelSystem plugin;
 
@@ -16,17 +16,18 @@ public class AddXPCommand implements CommandExecutor {
     }
 
     /**
-     * Usage: /addxp <identifier> <amount> <player>
+     * /simplelevels addxp <identifier> <amount> <player>
      */
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean execute(CommandSender sender, String[] args) {
+
         if (!sender.hasPermission("simplelevels.addxp")) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }
 
         if (args.length != 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /addxp <identifier> <amount> <player>");
+            sender.sendMessage(ChatColor.RED +
+                    "Usage: /simplelevels addxp <identifier> <amount> <player>");
             return true;
         }
 
@@ -51,21 +52,40 @@ public class AddXPCommand implements CommandExecutor {
             return true;
         }
 
-        // check disabled worlds for that instance
         if (inst.isWorldDisabled(target.getWorld().getName())) {
             sender.sendMessage(ChatColor.RED + "This LevelSystem is disabled in that world.");
             return true;
         }
 
         UUID uuid = target.getUniqueId();
-        int currentXP = inst.getPlayerXP(uuid);
-        int newXP = Math.max(0, currentXP + amount);
-        inst.setPlayerXP(uuid, newXP);
+
+        int oldXP = inst.getPlayerXP(uuid);
+        int oldLevel = inst.getPlayerLevel(uuid);
+
+        inst.setPlayerXP(uuid, Math.max(0, oldXP + amount));
 
         int newLevel = inst.getPlayerLevel(uuid);
 
-        sender.sendMessage(ChatColor.GREEN + "Added " + amount + " XP to " + target.getName() + " in system " + id + ". New level: " + newLevel);
-        target.sendMessage(ChatColor.translateAlternateColorCodes('&', "&aYou received &e" + amount + " &aXP in system &b" + id + "&a. New level: &e" + newLevel));
+        if (oldLevel == 0 && newLevel >= 1) {
+            inst.giveRewardIfPresent(target, 1);
+        }
+
+        if (newLevel > oldLevel) {
+            for (int lvl = Math.max(2, oldLevel + 1); lvl <= newLevel; lvl++) {
+                inst.giveRewardIfPresent(target, lvl);
+            }
+        }
+
+
+        sender.sendMessage(ChatColor.GREEN +
+                "Added " + amount + " XP to " + target.getName() +
+                " in system " + id + ". New level: " + newLevel);
+
+        target.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                "&aYou received &e" + amount +
+                        " &aXP in system &b" + id +
+                        "&a. New level: &e" + newLevel));
+
         return true;
     }
 }
