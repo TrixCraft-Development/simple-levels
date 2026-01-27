@@ -1,2 +1,2 @@
-# levelsystem
-A LevelSystem Plugin which supports multiple LevelSystem within one Plugin
+# Simple Levels
+A LevelSystem Plugin which supports multiple Level Systems within one Plugin
