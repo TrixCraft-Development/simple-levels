@@ -27,6 +27,10 @@ public class LevelSystemInstance {
 
     private int tickSpeed = 20;
     private int internalTickCounter = 0;
+    private int maxLevelDefault = 0;
+    private int maxLevelGlobal = 0;
+    private List<String> defaultFrames = new ArrayList<>();
+    private final Map<String, Integer> permissionMaxLevels = new HashMap<>();
 
     public LevelSystemInstance(LevelSystem plugin, String id, File file) {
         this.plugin = plugin;
@@ -57,43 +61,68 @@ public class LevelSystemInstance {
         animatedFrames.clear();
         frameIndex.clear();
         levelPermissions.clear();
+        permissionMaxLevels.clear();
 
+        defaultFrames = readDisplayFrames("default-design.display");
+        if (defaultFrames.isEmpty()) {
+            defaultFrames.add("&eLevel %level%");
+        }
+
+        int maxFromLevels = 0;
         if (cfg.isConfigurationSection("levels")) {
             for (String key : cfg.getConfigurationSection("levels").getKeys(false)) {
                 try {
                     int level = Integer.parseInt(key);
-
-                    // XP override
-                    if (cfg.contains("levels." + key + ".xp")) {
-                        explicitXpPerLevel.put(level, cfg.getInt("levels." + key + ".xp"));
-                    }
-
-                    // Permission (optional)
-                    if (cfg.isString("levels." + key + ".permission")) {
-                        levelPermissions.put(level, cfg.getString("levels." + key + ".permission"));
-                    }
-
-                    // Display
-                    String base = "levels." + key + ".display";
-                    List<String> frames = new ArrayList<>();
-
-                    if (cfg.isList(base)) {
-                        for (String s : cfg.getStringList(base)) {
-                            if (s != null) frames.add(s);
-                        }
-                    } else if (cfg.isString(base)) {
-                        frames.add(cfg.getString(base));
-                    }
-
-                    if (frames.isEmpty()) {
-                        frames.add("&eLevel " + level);
-                    }
-
-                    animatedFrames.put(level, frames);
-                    frameIndex.put(level, 0);
-
+                    maxFromLevels = Math.max(maxFromLevels, level);
                 } catch (NumberFormatException ignored) {}
             }
+        }
+
+        int configuredDefaultMax = cfg.getInt("max-levels.default", cfg.getInt("max_level", -1));
+        if (configuredDefaultMax > 0) {
+            maxLevelDefault = configuredDefaultMax;
+        } else {
+            maxLevelDefault = Math.max(1, maxFromLevels);
+        }
+
+        int maxFromPerms = 0;
+        if (cfg.isConfigurationSection("max-levels.permissions")) {
+            for (String perm : cfg.getConfigurationSection("max-levels.permissions").getKeys(false)) {
+                int value = cfg.getInt("max-levels.permissions." + perm, -1);
+                if (value > 0) {
+                    permissionMaxLevels.put(perm, value);
+                    maxFromPerms = Math.max(maxFromPerms, value);
+                }
+            }
+        }
+
+        maxLevelGlobal = Math.max(maxLevelDefault, Math.max(maxFromLevels, maxFromPerms));
+
+        for (int level = 1; level <= maxLevelGlobal; level++) {
+            String key = String.valueOf(level);
+            String basePath = "levels." + key;
+
+            // XP override
+            if (cfg.contains(basePath + ".xp")) {
+                explicitXpPerLevel.put(level, cfg.getInt(basePath + ".xp"));
+            }
+
+            // Permission (optional)
+            if (cfg.isString(basePath + ".permission")) {
+                levelPermissions.put(level, cfg.getString(basePath + ".permission"));
+            }
+
+            // Display (default fallback)
+            List<String> frames = readDisplayFrames(basePath + ".display");
+            if (frames.isEmpty()) {
+                frames = new ArrayList<>(defaultFrames);
+            }
+            if (frames.isEmpty()) {
+                frames.add("&eLevel %level%");
+            }
+
+            animatedFrames.put(level, frames);
+            frameIndex.put(level, 0);
         }
     }
 
@@ -149,11 +178,16 @@ public class LevelSystemInstance {
      * RAW level from XP only (no permissions)
      */
     public int getLevelFromXP(int xp) {
+        return getLevelFromXP(xp, maxLevelDefault);
+    }
+
+    public int getLevelFromXP(int xp, int maxLevel) {
+        if (maxLevel <= 0) return 0;
         int level = 1;
-        while (xp >= getRequiredXPForLevel(level)) {
+        while (level <= maxLevel && xp >= getRequiredXPForLevel(level)) {
             level++;
         }
-        return Math.max(0, level - 1);
+        return Math.max(0, Math.min(maxLevel, level - 1));
     }
 
     /**
@@ -161,15 +195,17 @@ public class LevelSystemInstance {
      */
     public int getPlayerLevel(UUID uuid) {
         Player player = plugin.getServer().getPlayer(uuid);
+        int maxLevelForPlayer = maxLevelDefault;
         if (player == null) {
-            return getLevelFromXP(getPlayerXP(uuid));
+            return getLevelFromXP(getPlayerXP(uuid), maxLevelForPlayer);
         }
 
-        int rawLevel = getLevelFromXP(getPlayerXP(uuid));
+        maxLevelForPlayer = getMaxLevelForPlayer(player);
+        int rawLevel = getLevelFromXP(getPlayerXP(uuid), maxLevelForPlayer);
         int allowedLevel = 0;
 
         for (int lvl : animatedFrames.keySet()) {
-            if (lvl > rawLevel) continue;
+            if (lvl > rawLevel || lvl > maxLevelForPlayer) continue;
 
             String perm = levelPermissions.get(lvl);
             if (perm == null || player.hasPermission(perm)) {
@@ -180,11 +216,31 @@ public class LevelSystemInstance {
     }
 
     public int getMaxLevel() {
-        int max = 0;
-        for (int lvl : animatedFrames.keySet()) {
-            max = Math.max(max, lvl);
+        return maxLevelDefault;
+    }
+
+    public int getMaxLevelForPlayer(Player player) {
+        int max = maxLevelDefault;
+        if (player == null) return max;
+        for (Map.Entry<String, Integer> entry : permissionMaxLevels.entrySet()) {
+            if (player.hasPermission(entry.getKey())) {
+                max = Math.max(max, entry.getValue());
+            }
         }
         return max;
+    }
+
+    private List<String> readDisplayFrames(String path) {
+        List<String> frames = new ArrayList<>();
+        if (cfg.isList(path)) {
+            for (String s : cfg.getStringList(path)) {
+                if (s != null) frames.add(s);
+            }
+        } else if (cfg.isString(path)) {
+            String value = cfg.getString(path);
+            if (value != null) frames.add(value);
+        }
+        return frames;
     }
 
     /* ---------------------------------------------------
@@ -246,8 +302,8 @@ public class LevelSystemInstance {
         String perm = levelPermissions.get(level);
         if (perm != null && !player.hasPermission(perm)) return;
 
-        String base = "levels." + level + ".reward";
-        if (!cfg.isConfigurationSection(base)) return;
+        String base = getRewardBasePath(level);
+        if (base == null) return;
         if (hasReward(player.getUniqueId(), level)) return;
 
         String type = cfg.getString(base + ".type", "").toLowerCase();
@@ -272,5 +328,16 @@ public class LevelSystemInstance {
         }
 
         markRewarded(player.getUniqueId(), level);
+    }
+
+    private String getRewardBasePath(int level) {
+        String perLevel = "levels." + level + ".reward";
+        if (cfg.isConfigurationSection(perLevel)) {
+            return perLevel;
+        }
+        if (cfg.isConfigurationSection("default-reward")) {
+            return "default-reward";
+        }
+        return null;
     }
 }

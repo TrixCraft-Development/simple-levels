@@ -88,6 +88,6 @@ public class LevelPlaceholder extends PlaceholderExpansion {
     private String handleMaxLevel(String systemId, Player player) {
         LevelSystemInstance inst = plugin.getManager().get(systemId);
         if (inst == null) return null;
-        return String.valueOf(inst.getMaxLevel());
+        return String.valueOf(inst.getMaxLevelForPlayer(player));
     }
 }

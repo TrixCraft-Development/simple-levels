@@ -7,6 +7,22 @@ players: {}
 # Used for animated displays (ticks)
 tick-speed: 10
 
+# Max levels (all levels up to the highest value are created automatically)
+max-levels:
+  default: 10
+  permissions:
+    simplelevels.max.premium: 25
+    simplelevels.max.vip: 50
+
+# Default design for levels without a custom display
+default-design:
+  display: "&eLevel %level% - &7Default"
+
+default-reward:
+  type: message
+  messages:
+    - "&aYou reached &eLevel %level%&a!"
+
 levels:
   1:
     display:
